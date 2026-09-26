@@ -70,7 +70,7 @@ export async function fetchDetails(id) {
     .replace(/[\n\f]/g, " ");
 
   const forms = species.varieties
-    .filter((v) => v.is_default)
+    .filter((v) => !v.is_default)
     .map((v) => ({
     id: idFromUrl(v.pokemon.url),
     label: displayName(v.pokemon.name, idFromUrl(v.pokemon.url)),

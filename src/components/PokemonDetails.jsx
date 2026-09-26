@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
-import { fetchDetails } from "../api.js";
+import { fetchDetails, fetchForm } from "../api.js";
 import { STAT_LABELS, TYPE_COLORS } from "../constants.js";
 import { artworkUrl, formatNo, spriteUrl, titleCase } from "../utils.js";
 import TypeBadge from "./TypeBadge.jsx";
