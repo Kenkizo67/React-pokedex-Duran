@@ -494,6 +494,24 @@ button {
   height: 72px;
   image-rendering: pixelated;
 }
+.forms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.form-chip {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: transparent;
+  border: 2px solid color-mix(in srgb, var(--tint) 55%, var(--ink));
+  border-radius: 999px;
+  cursor: pointer;
+}
+.form-chip.is-current {
+  background: var(--tint);
+  color: #14201a;
+}
 
 @media (max-width: 720px) {
   .dex {

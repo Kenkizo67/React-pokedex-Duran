@@ -51,6 +51,10 @@ function evolutionStages(node, depth = 0, stages = []) {
   return stages;
 }
 
+export async function fetchForm(id) {
+  return get(`${BASE}/pokemon/${id}`);
+}
+
 export async function fetchDetails(id) {
   const [pokemon, species] = await Promise.all([
     get(`${BASE}/pokemon/${id}`),
@@ -65,10 +69,18 @@ export async function fetchDetails(id) {
     .replace(/\u00ad\n?/g, "")
     .replace(/[\n\f]/g, " ");
 
+  const forms = species.varieties
+    .filter((v) => v.is_default)
+    .map((v) => ({
+    id: idFromUrl(v.pokemon.url),
+    label: displayName(v.pokemon.name, idFromUrl(v.pokemon.url)),
+  }));
+  
   return {
     pokemon,
     genus: species.genera.find((g) => g.language.name === "en")?.genus ?? "",
     flavor,
     evolution: evolutionStages(chain.chain),
+    forms,
   };
 }

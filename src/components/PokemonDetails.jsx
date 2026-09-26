@@ -16,11 +16,15 @@ export default function PokemonModal({
 }) {
   const [state, setState] = useState({ status: "loading", data: null });
   const [attempt, setAttempt] = useState(0);
+  const [formId, setFormId] = useState(null);
+  const [form, setForm] = useState(null);
   const closeRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: "loading", data: null });
+    setFormId(null);
+    setForm(null);
     fetchDetails(pokemon.id)
       .then((data) => !cancelled && setState({ status: "ready", data }))
       .catch(() => !cancelled && setState({ status: "error", data: null }));
@@ -28,6 +32,18 @@ export default function PokemonModal({
       cancelled = true;
     };
   }, [pokemon.id, attempt]);
+
+  useEffect(() => {
+    if (formId == null) {
+      setForm(null);
+      return;
+    }
+    let cancelled = false;
+    fetchForm(formId).then((data) => !cancelled && setForm(data));
+    return () => {
+      cancelled = true;
+    };
+  }, [formId]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -49,13 +65,15 @@ export default function PokemonModal({
   }, []);
 
   const { data } = state;
-  const shownTypes = data
-    ? data.pokemon.types.map((t) => t.type.name)
+  const active = form ?? data?.pokemon;
+  const shownTypes = active
+    ? active.types.map((t) => t.type.name)
     : types ?? [];
   const tint = TYPE_COLORS[shownTypes[0]] ?? "#9aa8a0";
-  const total = data
-    ? data.pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0)
+  const total = active
+    ? active.stats.reduce((sum, s) => sum + s.base_stat, 0)
     : 0;
+  const artId = form ? form.id : pokemon.id;
 
   return (
     <div
@@ -70,7 +88,7 @@ export default function PokemonModal({
         aria-label={pokemon.label}
       >
         <div className="sheet-art">
-          <img src={artworkUrl(pokemon.id)} alt={pokemon.label} />
+          <img src={artworkUrl(artId)} alt={pokemon.label} />
           <div className="sheet-nav">
             <button className="btn" onClick={onPrev} disabled={!onPrev}>
               Previous
@@ -85,7 +103,7 @@ export default function PokemonModal({
           <div className="sheet-head">
             <div>
               <p className="sheet-no">#{formatNo(pokemon.id)}</p>
-              <h2>{pokemon.label}</h2>
+              <h2>{form ? titleCase(form.name) : pokemon.label}</h2>
               {data?.genus && <p className="genus">{data.genus}</p>}
               <div className="sheet-types">
                 {shownTypes.map((t) => (
@@ -130,11 +148,11 @@ export default function PokemonModal({
               <dl className="facts">
                 <div>
                   <dt>Height</dt>
-                  <dd>{(data.pokemon.height / 10).toFixed(1)} m</dd>
+                  <dd>{(active.height / 10).toFixed(1)} m</dd>
                 </div>
                 <div>
                   <dt>Weight</dt>
-                  <dd>{(data.pokemon.weight / 10).toFixed(1)} kg</dd>
+                  <dd>{(active.weight / 10).toFixed(1)} kg</dd>
                 </div>
                 <div>
                   <dt>Abilities</dt>
@@ -149,13 +167,34 @@ export default function PokemonModal({
                   </dd>
                 </div>
               </dl>
+              {data.forms.length > 0 && (
+                <section>
+                  <h3>Forms</h3>
+                  <div className="forms">
+                    <button
+                      className={formId == null ? "form-chip is-current" : "form-chip"}
+                      onClick={() => setFormId(null)}>
+                      {pokemon.label}
+                    </button>
+                    {data.forms.map((f) => (
+                      <button
+                        key={f.id}
+                        className={formId === f.id ? "form-chip is-current" : "form-chip"}
+                        onClick={() => setFormId(f.id)}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               <section>
                 <h3>
                   Base stats <span className="total">Total {total}</span>
                 </h3>
                 <ul className="stats">
-                  {data.pokemon.stats.map((s) => (
+                  {active.stats.map((s) => (
                     <li key={s.stat.name}>
                       <span className="stat-label">
                         {STAT_LABELS[s.stat.name] ?? s.stat.name}
