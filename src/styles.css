@@ -512,6 +512,28 @@ button {
   background: var(--tint);
   color: #14201a;
 }
+.filter-dropdown {
+  position: relative;
+}
+
+.filters-panel {
+  position: absolute;
+  z-index: 6;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  gap: 12px;
+  width: min(420px, 82vw);
+  padding: 16px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+}
+
+.clear-filters {
+  justify-self: start;
+}
 
 @media (max-width: 720px) {
   .dex {

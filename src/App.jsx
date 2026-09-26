@@ -70,7 +70,7 @@ export default function App() {
     document.addEventListener("keydown",onKey);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onkey);
+      document.removeEventListener("keydown", onKey);
     };
   }, [filtersOpen]);
 
@@ -119,6 +119,7 @@ export default function App() {
     next = list[pos + 1] ?? null;
   }
 
+  const activeFilterCount = (gen ? 1 : 0) + types.size;
   const hasFilters = query || gen || types.size > 0 || onlyFavs;
   const clearFilters = () => {
     setQuery("");
@@ -138,7 +139,7 @@ export default function App() {
       </header>
 
       <main className="screen">
-        <div className="searchbar">
+                <div className="searchbar">
           <input
             className="search"
             type="search"
@@ -147,6 +148,65 @@ export default function App() {
             placeholder="Search by name or number"
             aria-label="Search Pokémon by name or number"
           />
+          <div className="filter-dropdown" ref={dropdownRef}>
+            <button
+              className="btn"
+              aria-expanded={filtersOpen}
+              aria-controls="filters-panel"
+              onClick={() => setFiltersOpen((v) => !v)}
+            >
+              Filters{activeFilterCount ? ` (${activeFilterCount})` : ""}{" "}
+              {filtersOpen ? "▲" : "▼"}
+            </button>
+            {filtersOpen && (
+              <section id="filters-panel" className="filters-panel" aria-label="Filters">
+                <div className="gens">
+                  <button className="gen" aria-pressed={gen === 0} onClick={() => setGen(0)}>
+                    <span>All</span>
+                    <small>I–IX</small>
+                  </button>
+                  {GENERATIONS.map((g) => (
+                    <button
+                      key={g.id}
+                      className="gen"
+                      aria-pressed={gen === g.id}
+                      onClick={() => setGen(gen === g.id ? 0 : g.id)}
+                    >
+                      <span>{g.label}</span>
+                      <small>{g.region}</small>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="types" role="group" aria-label="Filter by type, select one or more">
+                  {TYPES.map((t) => (
+                    <button
+                      key={t}
+                      className="chip"
+                      style={{ "--c": TYPE_COLORS[t], "--chip-ink": readableInk(TYPE_COLORS[t]) }}
+                      aria-pressed={types.has(t)}
+                      disabled={!typesReady}
+                      onClick={() => toggleType(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    className="btn clear-filters"
+                    onClick={() => {
+                      setGen(0);
+                      setTypes(new Set());
+                    }}
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </section>
+            )}
+          </div>
           <button
             className="btn"
             aria-pressed={onlyFavs}
@@ -155,48 +215,6 @@ export default function App() {
             ★ Saved{favorites.size ? ` (${favorites.size})` : ""}
           </button>
         </div>
-
-        <section className="filters" aria-label="Filters">
-          <div className="gens">
-            <button
-              className="gen"
-              aria-pressed={gen === 0}
-              onClick={() => setGen(0)}
-            >
-              <span>All</span>
-              <small>I–VI</small>
-            </button>
-            {GENERATIONS.map((g) => (
-              <button
-                key={g.id}
-                className="gen"
-                aria-pressed={gen === g.id}
-                onClick={() => setGen(gen === g.id ? 0 : g.id)}
-              >
-                <span>{g.label}</span>
-                <small>{g.region}</small>
-              </button>
-            ))}
-          </div>
-
-          <div className="types" role="group" aria-label="Filter by type">
-            {TYPES.map((t) => (
-              <button
-                key={t}
-                className="chip"
-                style={{
-                  "--c": TYPE_COLORS[t],
-                  "--chip-ink": readableInk(TYPE_COLORS[t]),
-                }}
-                aria-pressed={types.has(t)}
-                disabled={!typesReady}
-                onClick={() => toggleType(t)}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </section>
 
         {status === "loading" && (
           <div className="state">
