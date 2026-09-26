@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo,useRef, useState } from "react";
 import { fetchPokemonIndex, fetchTypeMap } from "./api.js";
 import { GENERATIONS, TYPES, TYPE_COLORS } from "./constants.js";
 import { readableInk } from "./utils.js";
@@ -27,6 +27,8 @@ export default function App() {
   const [onlyFavs, setOnlyFavs] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [favorites, setFavorites] = useState(loadFavorites);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const load = useCallback(() => {
     setStatus("loading");
@@ -54,6 +56,23 @@ export default function App() {
     } catch {
     }
   }, [favorites]);
+  useEffect(() => {
+    if(!filtersOpen) return;
+    const onPointerDown = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)){
+        setFiltersOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("mousedown",onPointerDown);
+    document.addEventListener("keydown",onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onkey);
+    };
+  }, [filtersOpen]);
 
   const toggleFavorite = useCallback((t) => {
     setFavorites((prev) => {
