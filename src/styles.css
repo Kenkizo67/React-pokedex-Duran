@@ -520,7 +520,7 @@ button {
   position: absolute;
   z-index: 6;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   display: grid;
   gap: 12px;
   width: min(420px, 82vw);
