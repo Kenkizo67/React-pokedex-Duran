@@ -23,7 +23,7 @@ export default function App() {
 
   const [query, setQuery] = useState("");
   const [gen, setGen] = useState(0);
-  const [type, setType] = useState("");
+  const [types, setTypes] = useState(() => new Set());
   const [onlyFavs, setOnlyFavs] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [favorites, setFavorites] = useState(loadFavorites);
@@ -55,11 +55,20 @@ export default function App() {
     }
   }, [favorites]);
 
-  const toggleFavorite = useCallback((id) => {
+  const toggleFavorite = useCallback((t) => {
     setFavorites((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  }, []);
+
+  const toggleType = useCallback((t) => {
+    setTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
       return next;
     });
   }, []);
@@ -70,14 +79,14 @@ export default function App() {
     const isNumber = /^\d+$/.test(q);
     return pokemon.filter((p) => {
       if (range && (p.id < range.from || p.id > range.to)) return false;
-      if (type && !typeMap[p.id]?.includes(type)) return false;
+      if (types.size && ![...types].every((t) => typeMap[p.id]?.includes(t))) return false;
       if (onlyFavs && !favorites.has(p.id)) return false;
       if (!q) return true;
       return isNumber
         ? String(p.id).startsWith(String(Number(q)))
         : p.label.toLowerCase().includes(q);
     });
-  }, [pokemon, typeMap, query, gen, type, onlyFavs, favorites]);
+  }, [pokemon, typeMap, query, gen, types, onlyFavs, favorites]);
 
   const close = useCallback(() => setSelectedId(null), []);
 
@@ -91,11 +100,11 @@ export default function App() {
     next = list[pos + 1] ?? null;
   }
 
-  const hasFilters = query || gen || type || onlyFavs;
+  const hasFilters = query || gen || types.size > 0 || onlyFavs;
   const clearFilters = () => {
     setQuery("");
     setGen(0);
-    setType("");
+    setTypes(new Set());
     setOnlyFavs(false);
   };
 
@@ -160,9 +169,9 @@ export default function App() {
                   "--c": TYPE_COLORS[t],
                   "--chip-ink": readableInk(TYPE_COLORS[t]),
                 }}
-                aria-pressed={type === t}
+                aria-pressed={types.has(t)}
                 disabled={!typesReady}
-                onClick={() => setType(type === t ? "" : t)}
+                onClick={() => toggleType(t)}
               >
                 {t}
               </button>
